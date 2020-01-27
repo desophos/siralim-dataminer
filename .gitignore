@@ -1,0 +1,9 @@
+# Python
+dist/
+*.egg-info/
+__pycache__/
+.pytest_cache/
+
+# Project-specific
+*.sublime-workspace
+db/

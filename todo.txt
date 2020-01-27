@@ -1,0 +1,3 @@
+Shady Dealer:
+gml_Object_obj_shadydealer_Create_0
+gml_Object_obj_shadydealer_KeyPress_69
