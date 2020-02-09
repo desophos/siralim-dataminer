@@ -24,6 +24,77 @@ regexes = {
     "Lore": re.compile(r'case (?P<dbid>\d+):\s*return "(?P<lore>.*)";'),
 }
 
+# currently unused but seems important to have for future reference
+condition_ids = {
+    "5": "Arcane",
+    "12": "Invisible",
+    "14": "Berserk",
+    "11": "Mend",
+    "4": "Grace",
+    "13": "Shell",
+    "10": "Leech",
+    "1": "Critical",
+    "3": "Ward",
+    "9": "Taunt",
+    "0": "Protect",
+    "7": "Multicast",
+    "8": "Multistrike",
+    "2": "Splash",
+    "6": "Barrier",
+    "22": "Poison",
+    "18": "Burn",
+    "19": "Confused",
+    "21": "Frozen",
+    "27": "Stun",
+    "25": "Sleep",
+    "29": "Weak",
+    "20": "Curse",
+    "26": "Snare",
+    "24": "Silence",
+    "17": "Blind",
+    "23": "Scorn",
+    "15": "Bleed",
+    "16": "Blight",
+    "28": "Vulnerable",
+    "30": "Drunk",
+}
+
+# the decompiler mangles scr_con calls for some reason
+# these are the objects it uses instead of ints
+condition_subs = {
+    "material": "Arcane",
+    "phonepause": "Invisible",
+    "item": "Berserk",
+    "talisman": "Mend",
+    "egg": "Grace",
+    "controller": "Shell",
+    "spellgem": "Leech",
+    "card": "Critical",
+    "core": "Ward",
+    "sigil": "Taunt",
+    "artifact": "Protect",
+    "orb": "Multicast",
+    "rune": "Multistrike",
+    "consumable": "Splash",
+    "misc": "Barrier",
+    "owbuff": "Poison",
+    "setup": "Burn",
+    "player": "Confused",
+    "weather": "Frozen",
+    "tutorial_loot2": "Stun",
+    "riddle_warp": "Sleep",
+    "warncorruptdata": "Weak",
+    "rategame": "Curse",
+    "tutorial_loot1": "Snare",
+    "tutorial_warp": "Silence",
+    "resolution": "Blind",
+    "tutorial": "Scorn",
+    "ritual": "Bleed",
+    "task": "Blight",
+    "tutorial_creature": "Vulnerable",
+    "30": "Drunk",  # Drunk seems to only ever be referenced literally
+}
+
 
 def get_db_contents(which):
     if which == "Lore":
@@ -125,6 +196,24 @@ def update_cards(creatures):
 
 
 def prettify(creatures):
-    # TODO: strip('"')
-    # TODO: resolve buff/debuff names
-    pass
+    for c in creatures:
+        if "scr_con" in creatures[c]["trait"]["desc"]:
+            # replace mangled condition references
+            # with the condition's actual name
+            creatures[c]["trait"]["desc"] = re.sub(
+                r'"\)*? \+ scr_con\(obj_(.+?)\)\) \+ "',
+                lambda match: condition_subs[match[1]],
+                creatures[c]["trait"]["desc"],
+            )
+        if "scr_GetPassiveName" in creatures[c]["trait"]["desc"]:
+            # GetPassiveName takes a dbid
+            # so use that dbid in our own lookup
+            creatures[c]["trait"]["desc"] = re.sub(
+                r'"\)*? \+ scr_GetPassiveName\((\d+?)\)\) \+ "',
+                lambda match: [
+                    c["trait"]["name"]
+                    for c in creatures.values()
+                    if c["dbid"] == match[1]
+                ][0],
+                creatures[c]["trait"]["desc"],
+            )
