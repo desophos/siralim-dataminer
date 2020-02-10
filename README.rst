@@ -16,4 +16,5 @@ Traits    DatabasePassives
 Materials DatabaseMaterials
 Lore      CreatureLore
 Cards     DatabaseCards
+Breeding  DatabaseBreeding
 ========= ===============================
