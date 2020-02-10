@@ -163,8 +163,7 @@ def update_creatures(creatures, which):
     if which == "Lore":
         # dbid == cid
         for match in matches:
-            groups = match.groupdict()
-            creatures[groups["dbid"]][ckey] = groups["lore"]
+            creatures[match["dbid"]][ckey] = match["lore"]
 
     else:
         info = {}
