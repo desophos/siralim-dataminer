@@ -22,6 +22,9 @@ regexes = {
         r".*\[mid, 3\] = (?P<dbid>\d+)"
     ),
     "Lore": re.compile(r'case (?P<dbid>\d+):\s*return "(?P<lore>.*)";'),
+    "Breeding": re.compile(
+        r"AddBreedingCombo\(\d+, (?P<offspring>\d+), (?P<pedigree>.+), (?P<mate>.+)\)"
+    ),
 }
 
 # currently unused but seems important to have for future reference
@@ -193,6 +196,18 @@ def update_cards(creatures):
         else:  # unique card effect
             cid = re.search(cid_re, line).group()
             creatures[cid]["card"] = re.search(desc_re, line).group()
+
+
+def update_breeding(creatures):
+    for match in re.finditer(regexes["Breeding"], get_db_contents("Breeding")):
+        # the first time we see an offspring, it needs a combo list created
+        if "breeding" not in creatures[match["offspring"]]:
+            creatures[match["offspring"]]["breeding"] = []
+
+        # add this combo (pedigree and mate) to the offspring's combos
+        creatures[match["offspring"]]["breeding"].append(
+            {k: v.strip('"') for k, v in match.groupdict().items() if k != "offspring"}
+        )
 
 
 def prettify(creatures):

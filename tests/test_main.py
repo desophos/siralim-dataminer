@@ -3,8 +3,8 @@ import re
 import pytest
 from siralim_dataminer import __version__
 from siralim_dataminer.main import (get_creatures, get_db_contents, name2key,
-                                    prettify, regexes, update_cards,
-                                    update_creatures)
+                                    prettify, regexes, update_breeding,
+                                    update_cards, update_creatures)
 
 
 def test_version():
@@ -32,6 +32,24 @@ def test_update_cards(creatures):
     update_cards(creatures)
     for c in creatures.values():
         assert "card" in c
+
+
+def test_breeding(creatures):
+    update_breeding(creatures)
+    for c in creatures.values():
+        if "breeding" in c:  # not all creatures have breeding combos
+            assert len(c["breeding"]) > 0
+            for combo in c["breeding"]:
+                assert "pedigree" in combo and "mate" in combo, c
+
+    # breeding combo 9
+    assert {"pedigree": "561", "mate": "470"} in creatures["560"]["breeding"]
+    # breeding combo 489
+    assert {"pedigree": "Cerberus", "mate": "Cerberus"} in creatures["454"]["breeding"]
+    # breeding combo 2471
+    assert {"pedigree": "193", "mate": "Basilisk"} in creatures["195"]["breeding"]
+    # breeding combo 2515
+    assert {"pedigree": "Spectre", "mate": "6"} in creatures["441"]["breeding"]
 
 
 def test_prettify(creatures):
