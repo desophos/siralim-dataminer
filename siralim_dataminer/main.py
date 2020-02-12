@@ -1,11 +1,7 @@
+import functools
+import json
 import os
 import re
-
-filename = {
-    "dir": "db",
-    "prefix": "gml_Script_scr_",
-    "suffix": ".gml",
-}
 
 name2key = {"Passives": "trait", "Materials": "material", "Lore": "lore"}
 
@@ -27,79 +23,9 @@ regexes = {
     ),
 }
 
-# currently unused but seems important to have for future reference
-condition_ids = {
-    "5": "Arcane",
-    "12": "Invisible",
-    "14": "Berserk",
-    "11": "Mend",
-    "4": "Grace",
-    "13": "Shell",
-    "10": "Leech",
-    "1": "Critical",
-    "3": "Ward",
-    "9": "Taunt",
-    "0": "Protect",
-    "7": "Multicast",
-    "8": "Multistrike",
-    "2": "Splash",
-    "6": "Barrier",
-    "22": "Poison",
-    "18": "Burn",
-    "19": "Confused",
-    "21": "Frozen",
-    "27": "Stun",
-    "25": "Sleep",
-    "29": "Weak",
-    "20": "Curse",
-    "26": "Snare",
-    "24": "Silence",
-    "17": "Blind",
-    "23": "Scorn",
-    "15": "Bleed",
-    "16": "Blight",
-    "28": "Vulnerable",
-    "30": "Drunk",
-}
-
-# the decompiler mangles scr_con calls for some reason
-# these are the objects it uses instead of ints
-condition_subs = {
-    "material": "Arcane",
-    "phonepause": "Invisible",
-    "item": "Berserk",
-    "talisman": "Mend",
-    "egg": "Grace",
-    "controller": "Shell",
-    "spellgem": "Leech",
-    "card": "Critical",
-    "core": "Ward",
-    "sigil": "Taunt",
-    "artifact": "Protect",
-    "orb": "Multicast",
-    "rune": "Multistrike",
-    "consumable": "Splash",
-    "misc": "Barrier",
-    "owbuff": "Poison",
-    "setup": "Burn",
-    "player": "Confused",
-    "weather": "Frozen",
-    "tutorial_loot2": "Stun",
-    "riddle_warp": "Sleep",
-    "warncorruptdata": "Weak",
-    "rategame": "Curse",
-    "tutorial_loot1": "Snare",
-    "tutorial_warp": "Silence",
-    "resolution": "Blind",
-    "tutorial": "Scorn",
-    "ritual": "Bleed",
-    "task": "Blight",
-    "tutorial_creature": "Vulnerable",
-    "30": "Drunk",  # Drunk seems to only ever be referenced literally
-}
-
 
 def get_db_contents(which):
+    filename = get_data("filename")
     if which == "Lore":
         kind = "Creature"
     else:
@@ -112,20 +38,7 @@ def get_db_contents(which):
 
 
 def get_creatures():
-    entry = {
-        "name": 7,
-        "class": 2,
-        "race": 11,
-        "hp": 4,
-        "mana": 6,
-        "atk": 0,
-        "int": 3,
-        "def": 5,
-        "spd": 12,
-        "tags": 14,
-        "dbid": 10,
-    }
-
+    entry = get_data("creature")
     fields = entry.keys()
     contents = get_db_contents("Creature")
     ids = re.findall(r"critconstant = (\d*)", contents)
@@ -210,6 +123,7 @@ def update_breeding(creatures):
 
 
 def prettify(creatures):
+    condition_subs = get_data("condition_subs")
     for c in creatures:
         if "scr_con" in creatures[c]["trait"]["desc"]:
             # replace mangled condition references
@@ -231,3 +145,15 @@ def prettify(creatures):
                 ][0],
                 creatures[c]["trait"]["desc"],
             )
+
+
+@functools.lru_cache()
+def read_data():
+    with open("data.json") as f:
+        data = json.load(f)
+    return data
+
+
+def get_data(name):
+    return read_data()[name]
+
