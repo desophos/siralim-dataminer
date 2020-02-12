@@ -60,3 +60,9 @@ def test_prettify(creatures):
         assert "scr_GetPassiveName" not in c["trait"]["desc"], c["trait"]
         assert not any('"' in v for v in c["trait"].values()), c["trait"]
         assert not any('"' in v for v in c.values()), c
+
+
+def test_sparseness(creatures):
+    for i in creatures:
+        if i != "0":
+            assert str(int(i) - 1) in creatures
