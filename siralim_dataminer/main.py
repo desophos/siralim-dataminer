@@ -157,3 +157,6 @@ def read_data():
 def get_data(name):
     return read_data()[name]
 
+
+def get_sprite(which):
+    return os.path.join("spr_crits_battle", f"{which}.png")
